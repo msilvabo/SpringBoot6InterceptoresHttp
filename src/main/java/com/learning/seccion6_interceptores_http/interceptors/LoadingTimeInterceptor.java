@@ -10,21 +10,32 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.Random;
+
 @Component("timeInterceptor")
 public class LoadingTimeInterceptor implements HandlerInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(LoadingTimeInterceptor.class);
 
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        HandlerInterceptor.super.postHandle(request, response, handler, modelAndView);
-        HandlerMethod controller = ((HandlerMethod)handler);
-        logger.info("LoadingTimeInterceptor: preHandle()  saliendo...." + controller.getMethod().getName() );
-    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         HandlerMethod controller = ((HandlerMethod)handler);
         logger.info("LoadingTimeInterceptor: preHandle()  entrando...." + controller.getMethod().getName() );
+        long startTime = System.currentTimeMillis();
+        request.setAttribute("startTime", startTime);
+        Random random = new Random();
+        int delay = random.nextInt(500);
+        Thread.sleep(delay);
         return true;
+    }
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+        HandlerInterceptor.super.postHandle(request, response, handler, modelAndView);
+        HandlerMethod controller = ((HandlerMethod)handler);
+        long endTime = System.currentTimeMillis();
+        long startTime = (long) request.getAttribute("startTime");
+        long resultado = (endTime - startTime);
+        logger.info("LoadingTimeInterceptor: preHandle()  saliendo...." + controller.getMethod().getName() );
+        logger.info("Tiempo transcurrido..." + resultado + " milisegundos");
     }
 }
